@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1A120C">
+    <title>The Storybook Die</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --leather-deep: #120C07;
+            --leather: #1A120C;
+            --leather-mid: #241A10;
+            --parchment: #EFE3C6;
+            --parchment-dim: #D9C69E;
+            --ink: #2A1E12;
+            --ink-soft: #4A3820;
+            --gold: #C9A227;
+            --gold-dim: #8A6D1F;
+            --wax: #8E2F2F;
+            --cream: #F0E6CC;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            min-height: 100dvh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: 'IM Fell English', Georgia, serif;
+            color: var(--cream);
+            background:
+                radial-gradient(90% 70% at 50% 12%, #33250F 0%, var(--leather) 55%, var(--leather-deep) 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(38% 30% at 50% 26%, rgba(255, 190, 90, 0.10) 0%, rgba(255, 190, 90, 0) 70%);
+            animation: flicker 7s ease-in-out infinite;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.06;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.82; }
+            25% { opacity: 0.94; }
+            75% { opacity: 0.88; }
+        }
+
+        .tome {
+            max-width: 620px;
+            margin: 0 auto;
+            padding: 7vh 24px 9vh;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        header { text-align: center; }
+
+        .kicker {
+            font-size: 14px;
+            letter-spacing: 0.32em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin: 0 0 10px;
+            opacity: 0.9;
+        }
+
+        h1 {
+            font-family: 'IM Fell English SC', Georgia, serif;
+            font-size: 42px;
+            font-weight: 400;
+            margin: 0;
+            letter-spacing: 0.02em;
+            color: var(--cream);
+            text-shadow: 0 2px 18px rgba(201, 162, 39, 0.25);
+        }
+
+        .rule {
+            width: 220px;
+            height: 1px;
+            margin: 16px auto 0;
+            background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+            position: relative;
+        }
+        .rule::after {
+            content: '✦';
+            position: absolute;
+            left: 50%;
+            top: -9px;
+            transform: translateX(-50%);
+            color: var(--gold);
+            font-size: 12px;
+        }
+
+        /* ---------- guide ---------- */
+        .guide {
+            width: 100%;
+            max-width: 560px;
+            background: rgba(18, 12, 7, 0.55);
+            border: 1px solid rgba(201, 162, 39, 0.22);
+            border-radius: 6px;
+            padding: 20px 26px;
+        }
+
+        .guide-label {
+            font-size: 12px;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin: 0 0 10px;
+            text-align: center;
+        }
+
+        .guide p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: rgba(240, 230, 204, 0.8);
+            margin: 0;
+            text-align: center;
+        }
+
+        .guide em { color: var(--cream); font-style: italic; }
+
+        /* ---------- the table ---------- */
+        .table-zone {
+            width: 100%;
+            max-width: 560px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 22px;
+        }
+
+        .die-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .die-opt {
+            font-family: 'IM Fell English SC', Georgia, serif;
+            font-size: 16px;
+            letter-spacing: 0.06em;
+            color: var(--parchment-dim);
+            background: transparent;
+            border: 1px solid rgba(201, 162, 39, 0.35);
+            border-radius: 4px;
+            padding: 8px 14px;
+            cursor: pointer;
+            transition: background 200ms ease, color 200ms ease, border-color 200ms ease;
+        }
+        .die-opt:hover { border-color: var(--gold); color: var(--cream); }
+        .die-opt.selected {
+            background: var(--gold-dim);
+            border-color: var(--gold-dim);
+            color: var(--leather-deep);
+        }
+
+        /* the die */
+        .die-face {
+            width: 130px;
+            height: 130px;
+            border-radius: 14px;
+            background:
+                radial-gradient(120% 120% at 30% 25%, #E9D3A0 0%, var(--parchment) 45%, #D5BF92 100%);
+            border: 2px solid rgba(138, 109, 31, 0.7);
+            box-shadow:
+                0 20px 44px -14px rgba(0, 0, 0, 0.7),
+                inset 0 0 22px rgba(138, 109, 31, 0.25),
+                inset 0 2px 0 rgba(255, 255, 255, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--ink);
+            font-family: 'IM Fell English SC', Georgia, serif;
+            font-size: 56px;
+            transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 300ms ease;
+            user-select: none;
+        }
+
+        .die-face.tumbling { animation: tumble 500ms cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+
+        @keyframes tumble {
+            0%   { transform: rotate(0deg) scale(1); }
+            25%  { transform: rotate(14deg) scale(1.12); }
+            50%  { transform: rotate(-10deg) scale(0.94); }
+            75%  { transform: rotate(6deg) scale(1.06); }
+            100% { transform: rotate(0deg) scale(1); }
+        }
+
+        .die-face.crit {
+            box-shadow:
+                0 20px 44px -14px rgba(0, 0, 0, 0.7),
+                0 0 44px 8px rgba(201, 162, 39, 0.5),
+                inset 0 0 22px rgba(138, 109, 31, 0.25);
+        }
+
+        .die-face.fumble {
+            filter: brightness(0.85);
+            transform: rotate(-4deg);
+        }
+
+        .die-sub {
+            font-style: italic;
+            font-size: 14px;
+            color: rgba(240, 230, 204, 0.5);
+            margin: 0;
+            text-align: center;
+        }
+
+        /* narration card */
+        .narration {
+            width: 100%;
+            background:
+                radial-gradient(120% 100% at 50% 0%, #F6EBD2 0%, var(--parchment) 55%, var(--parchment-dim) 100%);
+            border-radius: 6px;
+            color: var(--ink);
+            padding: 34px 32px;
+            box-shadow:
+                0 24px 60px -18px rgba(0, 0, 0, 0.75),
+                inset 0 0 0 1px rgba(138, 109, 31, 0.35),
+                inset 0 0 46px rgba(138, 109, 31, 0.12);
+            text-align: center;
+            display: none;
+            opacity: 0;
+        }
+
+        .narration.shown {
+            display: block;
+            animation: draw 600ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+        }
+
+        @keyframes draw {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .narration-tier {
+            font-size: 12px;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: var(--gold-dim);
+            margin: 0 0 14px;
+        }
+
+        .narration-text {
+            font-size: 21px;
+            font-style: italic;
+            line-height: 1.55;
+            margin: 0;
+            color: var(--ink-soft);
+        }
+
+        /* manual roll input */
+        .manual-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .manual-input {
+            width: 90px;
+            font-family: 'IM Fell English SC', Georgia, serif;
+            font-size: 22px;
+            text-align: center;
+            color: var(--ink);
+            background: var(--parchment);
+            border: 1px solid rgba(138, 109, 31, 0.5);
+            border-radius: 4px;
+            padding: 8px 6px;
+            outline: none;
+        }
+        .manual-input:focus { border-color: var(--gold); }
+
+        .manual-label {
+            font-size: 15px;
+            font-style: italic;
+            color: rgba(240, 230, 204, 0.6);
+        }
+
+        /* buttons */
+        .roll-btn {
+            font-family: 'IM Fell English SC', Georgia, serif;
+            font-size: 17px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--leather-deep);
+            background: linear-gradient(180deg, #E4C860, var(--gold) 55%, #B08A1E);
+            border: 1px solid rgba(240, 230, 204, 0.5);
+            border-radius: 4px;
+            padding: 13px 38px;
+            cursor: pointer;
+            box-shadow:
+                0 10px 26px -10px rgba(201, 162, 39, 0.55),
+                inset 0 1px 0 rgba(255, 255, 255, 0.45);
+            transition: transform 150ms ease, box-shadow 200ms ease, filter 200ms ease;
+        }
+        .roll-btn:hover { transform: translateY(-1px); filter: brightness(1.06); }
+        .roll-btn:active { transform: translateY(0); }
+        .roll-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+        .note {
+            font-style: italic;
+            font-size: 15px;
+            color: rgba(240, 230, 204, 0.55);
+            margin: 0;
+            min-height: 20px;
+            text-align: center;
+        }
+
+        /* ---------- history ---------- */
+        .history {
+            width: 100%;
+            max-width: 560px;
+            text-align: center;
+            border-top: 1px solid rgba(201, 162, 39, 0.2);
+            padding-top: 18px;
+        }
+
+        .history-label {
+            font-size: 13px;
+            letter-spacing: 0.26em;
+            text-transform: uppercase;
+            color: var(--gold-dim);
+            margin: 0 0 10px;
+        }
+
+        .history-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .history-item {
+            font-size: 16px;
+            font-style: italic;
+            color: rgba(240, 230, 204, 0.6);
+        }
+
+        .history-item .roll-num {
+            color: var(--gold);
+            font-style: normal;
+        }
+
+        .history-empty {
+            font-size: 15px;
+            font-style: italic;
+            color: rgba(240, 230, 204, 0.35);
+        }
+
+        footer {
+            font-size: 14px;
+            font-style: italic;
+            color: rgba(240, 230, 204, 0.4);
+            text-align: center;
+            margin-top: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .footer-credit {
+            font-size: 13px;
+            font-style: italic;
+            color: rgba(240, 230, 204, 0.5);
+            margin: 0;
+        }
+
+        .footer-credit em {
+            color: var(--gold-dim);
+            font-style: italic;
+        }
+
+        @media (max-width: 560px) {
+            .tome { padding: 5vh 16px 8vh; }
+            h1 { font-size: 32px; }
+            .narration { padding: 28px 22px; }
+            .narration-text { font-size: 18px; }
+            .die-face { width: 110px; height: 110px; font-size: 48px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <main class="tome">
+        <header>
+            <p class="kicker">from the dice tower of the ledger</p>
+            <h1>The Storybook Die</h1>
+            <div class="rule"></div>
+        </header>
+
+        <section class="guide" aria-label="how to use">
+            <p class="guide-label">what this is</p>
+            <p>Every roll tells a story. Roll the die and the book narrates your fortune — or type the number you rolled at the table, and it will find the words for you.</p>
+        </section>
+
+        <section class="table-zone" aria-label="the dice table">
+            <div class="die-row" role="group" aria-label="choose a die">
+                <button class="die-opt" data-sides="4">d4</button>
+                <button class="die-opt" data-sides="6">d6</button>
+                <button class="die-opt" data-sides="8">d8</button>
+                <button class="die-opt" data-sides="10">d10</button>
+                <button class="die-opt" data-sides="12">d12</button>
+                <button class="die-opt selected" data-sides="20">d20</button>
+            </div>
+
+            <div class="die-face" id="dieFace" aria-live="polite">20</div>
+            <p class="die-sub" id="dieSub">choose a die, then roll</p>
+
+            <article class="narration" id="narration">
+                <p class="narration-tier" id="narrationTier"></p>
+                <p class="narration-text" id="narrationText"></p>
+            </article>
+
+            <div class="manual-row">
+                <span class="manual-label">rolled it yourself?</span>
+                <input class="manual-input" id="manualInput" type="number" min="1" max="20" placeholder="17" aria-label="your roll">
+                <button class="roll-btn" id="manualBtn" style="padding:10px 20px;font-size:14px;">narrate it</button>
+            </div>
+
+            <button class="roll-btn" id="rollBtn">roll the die</button>
+            <p class="note" id="note"></p>
+        </section>
+
+        <section class="history" id="history">
+            <p class="history-label">rolls remembered</p>
+            <ul class="history-list" id="historyList"></ul>
+        </section>
+
+        <footer>
+            <p>the book remembers every roll it has witnessed</p>
+            <p class="footer-credit">penned by <em>Daanish</em> of <em>Chaos Collective Labs</em> — may your omens be kind and your dice be true</p>
+        </footer>
+    </main>
+
+    <script>
+        /* ============================================================
+           ENGINE — pure functions, no DOM. Extracted and exported by
+           the test harness. rng is injected so tests are deterministic.
+           ============================================================ */
+
+        const SIDES = [4, 6, 8, 10, 12, 20];
+
+        // tiers: crit / good / mid / poor / fumble
+        const NARRATIONS = {
+            crit: [
+                'Fortune, that fickle muse, kisses your blade. The gods lean in to watch.',
+                'The dice tumble like a struck bell, and fate answers in your favour. Tonight, you are the story.',
+                'A hush falls. The roll lands true — and every eye at the table knows what it means.',
+                'The ledger of the dead makes a small, approving note. You will not be forgotten easily.',
+                'Chance itself applauds. Take the moment — such grace is not loaned twice.',
+                'The universe blinks, surprised, and lets you through. Do not waste the opening.'
+            ],
+            good: [
+                'A steady hand and a kind wind. The roll serves you well.',
+                'The die lands with quiet confidence. Not a triumph, but the road to one.',
+                'The book turns a page, and your name is written on the good side of it.',
+                'Solid. The kind of roll that makes bards speak of you in the past tense, favourably.',
+                'The fates nod — not cheering, but watching with interest.'
+            ],
+            mid: [
+                'The roll hangs between worlds, as rolls do. The book will let you interpret it as you will.',
+                'Neither glory nor ruin — merely the middle of the page, where most of life is written.',
+                'A coin-flip verdict from a die that refuses to commit. The table shrugs. So be it.',
+                'Adequate. The bards will not sing of this, but the bards are not always wrong.',
+                'The die lands like a reluctant witness: it saw something, but it is not saying.'
+            ],
+            poor: [
+                'The fates glance away, embarrassed for you.',
+                'A roll that the book records in small, apologetic letters.',
+                'The dice gods cough politely. It did not go well.',
+                'The story takes an unexpected turn — not a ruinous one, but not a flattering one either.',
+                'Gravity, that old enemy, had its way with the die.'
+            ],
+            fumble: [
+                'The dice gods laugh, and your dignity joins the floor.',
+                'The roll lands, and somewhere a bard crosses out a line he was writing about you.',
+                'Fate snorts. The tavern keeper has seen this before — he is already pouring the pity ale.',
+                'The die betrays you in full view of everyone. The book records it in delighted detail.',
+                'A stumble so complete that even the candle seems to flicker in sympathy.',
+                'The ledger of the dead adds a footnote. It is not kind, but it is thorough.'
+            ]
+        };
+
+        const TIER_ORDER = ['crit', 'good', 'mid', 'poor', 'fumble'];
+
+        // Classify a roll into a tier for the given die sides.
+        function tierFor(roll, sides) {
+            const n = Number(roll);
+            const s = Number(sides);
+            if (!Number.isFinite(n) || !Number.isFinite(s) || s < 2) return null;
+            if (n < 1 || n > s) return null; // outside the die's range
+            if (n === s) return 'crit';
+            if (n === 1) return 'fumble';
+            const ratio = n / s;
+            if (ratio >= 0.75) return 'good';
+            if (ratio >= 0.45) return 'mid';
+            return 'poor';
+        }
+
+        // Pick a narration line for a tier. rng injected for determinism.
+        function narrationFor(roll, sides, rng) {
+            const tier = tierFor(roll, sides);
+            if (!tier) return null;
+            const pool = NARRATIONS[tier];
+            const r = typeof rng === 'function' ? rng : Math.random;
+            const idx = Math.floor(r() * pool.length);
+            return { tier, line: pool[idx] };
+        }
+
+        // Roll a die of the given sides. rng injected.
+        function rollDie(sides, rng) {
+            const s = Number(sides);
+            if (SIDES.indexOf(s) === -1) return null;
+            const r = typeof rng === 'function' ? rng : Math.random;
+            return Math.floor(r() * s) + 1;
+        }
+
+        /* ============================================================
+           UI — only runs in a browser (jsdom/Node skip it)
+           ============================================================ */
+        if (typeof document !== "undefined") {
+            (function () {
+                const STORAGE_KEY = 'storybook-die:v1';
+
+                function loadHistory() {
+                    try {
+                        const raw = localStorage.getItem(STORAGE_KEY);
+                        if (!raw) return [];
+                        const parsed = JSON.parse(raw);
+                        return Array.isArray(parsed) ? parsed : [];
+                    } catch (e) { return []; }
+                }
+
+                function saveHistory(h) {
+                    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(h)); }
+                    catch (e) { /* session-only */ }
+                }
+
+                const $dieFace     = document.getElementById('dieFace');
+                const $dieSub      = document.getElementById('dieSub');
+                const $rollBtn     = document.getElementById('rollBtn');
+                const $manualBtn   = document.getElementById('manualBtn');
+                const $manualInput = document.getElementById('manualInput');
+                const $narration   = document.getElementById('narration');
+                const $narrationTier = document.getElementById('narrationTier');
+                const $narrationText = document.getElementById('narrationText');
+                const $note        = document.getElementById('note');
+                const $historyList = document.getElementById('historyList');
+                const $dieOpts     = Array.from(document.querySelectorAll('.die-opt'));
+
+                let selectedSides = 20;
+                let history = loadHistory();
+
+                function tierLabel(t) {
+                    return { crit: 'critical', good: 'favourable', mid: 'uncertain', poor: 'unfortunate', fumble: 'fumbled' }[t] || t;
+                }
+
+                function renderHistory() {
+                    if (history.length === 0) {
+                        $historyList.innerHTML = '<li class="history-empty">no rolls witnessed yet. the book waits.</li>';
+                        return;
+                    }
+                    $historyList.innerHTML = history.slice().reverse().slice(0, 12).map(h =>
+                        '<li class="history-item">a d' + h.sides + ' falls <span class="roll-num">' + h.roll + '</span> — ' + tierLabel(h.tier) + '</li>'
+                    ).join('');
+                }
+
+                function narrate(roll, sides) {
+                    const result = narrationFor(roll, sides, Math.random);
+                    if (!result) {
+                        $note.textContent = 'that number makes no sense on a d' + sides + '.';
+                        return;
+                    }
+
+                    history = history.concat({ roll: Number(roll), sides, tier: result.tier, at: Date.now() });
+                    saveHistory(history);
+                    renderHistory();
+
+                    $dieFace.textContent = String(roll);
+                    $dieSub.textContent = 'a d' + sides + ' speaks';
+                    $narrationTier.textContent = tierLabel(result.tier);
+                    $narrationText.textContent = result.line;
+                    $narration.classList.remove('shown');
+                    void $narration.offsetWidth;
+                    $narration.classList.add('shown');
+
+                    $dieFace.classList.remove('crit', 'fumble');
+                    if (result.tier === 'crit') $dieFace.classList.add('crit');
+                    if (result.tier === 'fumble') $dieFace.classList.add('fumble');
+                    $note.textContent = '';
+                }
+
+                function roll() {
+                    const roll = rollDie(selectedSides, Math.random);
+                    $dieFace.classList.remove('tumbling');
+                    void $dieFace.offsetWidth;
+                    $dieFace.classList.add('tumbling');
+                    setTimeout(() => narrate(roll, selectedSides), 480);
+                }
+
+                $rollBtn.addEventListener('click', roll);
+
+                $dieOpts.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        $dieOpts.forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        selectedSides = Number(btn.dataset.sides);
+                        $manualInput.max = String(selectedSides);
+                        $manualInput.placeholder = '1–' + selectedSides;
+                        $dieSub.textContent = 'a d' + selectedSides + ' awaits';
+                    });
+                });
+
+                $manualBtn.addEventListener('click', () => {
+                    const val = Number($manualInput.value);
+                    if (!Number.isFinite(val) || val < 1 || val > selectedSides) {
+                        $note.textContent = 'the book needs a number between 1 and ' + selectedSides + '.';
+                        return;
+                    }
+                    narrate(val, selectedSides);
+                });
+
+                $manualInput.addEventListener('keydown', e => {
+                    if (e.key === 'Enter') $manualBtn.click();
+                });
+
+                renderHistory();
+            })();
+        }
+    </script>
+</body>
+</html>

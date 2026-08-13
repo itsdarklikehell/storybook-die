@@ -1,0 +1,12 @@
+{
+  "name": "storybook-die",
+  "version": "1.0.0",
+  "description": "The Storybook Die — every roll tells a story. A literary d20 that narrates your fortune.",
+  "private": true,
+  "scripts": {
+    "test": "node test/engine.test.js && node test/ui.test.js"
+  },
+  "devDependencies": {
+    "jsdom": "^26.1.0"
+  }
+}
